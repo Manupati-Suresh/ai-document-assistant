@@ -138,13 +138,14 @@ try:
 except Exception as e:
     st.error(f"❌ File system write access - Failed: {str(e)}")
 
-# Check FAISS index directory
-if os.path.exists("faiss_index"):
-    st.success("✅ FAISS index directory exists")
-    files = os.listdir("faiss_index")
-    st.write(f"**Files in index:** {len(files)}")
+# Check ChromaDB directory
+chroma_dirs = [d for d in os.listdir('.') if d.startswith('chroma_db_')]
+if chroma_dirs:
+    st.success(f"✅ ChromaDB directories found: {len(chroma_dirs)}")
+    for dir_name in chroma_dirs[:3]:  # Show first 3
+        st.write(f"**Directory:** {dir_name}")
 else:
-    st.info("ℹ️ No FAISS index directory found (normal for first run)")
+    st.info("ℹ️ No ChromaDB directories found (normal for first run)")
 
 st.markdown("---")
 st.markdown("**Health check completed!** If all items show ✅, your system is ready to go.")

@@ -33,8 +33,9 @@ ENV/
 env.bak/
 venv.bak/
 
-# FAISS indices
+# Vector store indices
 faiss_index*/
+chroma_db*/
 *.faiss
 *.pkl
 

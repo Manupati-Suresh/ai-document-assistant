@@ -10,7 +10,7 @@ import json
 import hashlib
 from datetime import datetime
 from typing import List, Dict, Any
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferWindowMemory
@@ -270,8 +270,16 @@ def create_vector_store(chunks: List[str], file_hash: str) -> tuple:
         
         progress = ProgressTracker(total_batches, "Creating embeddings")
         
-        vector_stores = []
+        # Create persistent directory
+        persist_directory = f"chroma_db_{file_hash}"
         
+        # Create ChromaDB vector store
+        vector_store = Chroma(
+            embedding_function=embeddings,
+            persist_directory=persist_directory
+        )
+        
+        # Add documents in batches
         for i in range(0, len(chunks), batch_size):
             batch = chunks[i:i+batch_size]
             batch_num = i // batch_size + 1
@@ -279,8 +287,14 @@ def create_vector_store(chunks: List[str], file_hash: str) -> tuple:
             progress.update(batch_num, f"Batch {batch_num}/{total_batches}")
             
             try:
-                batch_db = FAISS.from_texts(batch, embeddings)
-                vector_stores.append(batch_db)
+                # Create metadata for each chunk
+                metadatas = [{"chunk_id": i + j, "source": f"chunk_{i + j}"} for j in range(len(batch))]
+                
+                # Add texts to vector store
+                vector_store.add_texts(
+                    texts=batch,
+                    metadatas=metadatas
+                )
                 
                 # Rate limiting - more conservative
                 if batch_num < total_batches:
@@ -290,40 +304,29 @@ def create_vector_store(chunks: List[str], file_hash: str) -> tuple:
                 display_error_info(e, f"Creating embeddings for batch {batch_num}")
                 return None, None
         
-        # Merge all vector stores
-        progress.update(total_batches, "Merging vector stores...")
-        main_db = vector_stores[0]
-        for db in vector_stores[1:]:
-            main_db.merge_from(db)
-        
-        # Save to disk
-        index_path = f"faiss_index_{file_hash}"
-        main_db.save_local(index_path)
-        
         progress.complete("✅ Vector store created successfully!")
         time.sleep(1)
         progress.cleanup()
         
-        return main_db, index_path
+        return vector_store, persist_directory
         
     except Exception as e:
         display_error_info(e, "vector store creation")
         return None, None
 
-def load_vector_store(index_path: str) -> FAISS:
+def load_vector_store(persist_directory: str) -> Chroma:
     """Load existing vector store"""
     try:
         embeddings = get_embeddings()
-        return FAISS.load_local(
-            index_path, 
-            embeddings,
-            allow_dangerous_deserialization=True
+        return Chroma(
+            embedding_function=embeddings,
+            persist_directory=persist_directory
         )
     except Exception as e:
         st.error(f"❌ Error loading vector store: {str(e)}")
         return None
 
-def create_conversation_chain(vector_store: FAISS):
+def create_conversation_chain(vector_store: Chroma):
     """Create conversation chain with memory"""
     try:
         memory = ConversationBufferWindowMemory(

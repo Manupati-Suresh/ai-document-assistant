@@ -34,7 +34,7 @@ AI Document Assistant is a powerful, production-ready application that allows yo
 - **Frontend**: Streamlit with custom CSS styling
 - **AI Model**: Google Gemini 2.0 Flash (latest generation)
 - **Embeddings**: Google Text Embedding 004
-- **Vector Database**: FAISS for efficient similarity search
+- **Vector Database**: ChromaDB for efficient similarity search
 - **Text Processing**: LangChain with recursive character splitting
 - **PDF Processing**: PyPDF2 with robust error handling
 - **Memory Management**: Conversation buffer with sliding window
@@ -62,7 +62,7 @@ with col1:
     2. **Text Extraction**: Page-by-page text extraction with error handling
     3. **Intelligent Chunking**: 1000-character chunks with 200-character overlap
     4. **Embedding Generation**: Google's latest embedding model
-    5. **Vector Storage**: FAISS index for fast similarity search
+    5. **Vector Storage**: ChromaDB index for fast similarity search
     6. **Query Processing**: Retrieval-augmented generation (RAG)
     7. **Response Generation**: Context-aware AI responses
     """)
@@ -119,7 +119,7 @@ st.markdown("""
 - **[Streamlit](https://streamlit.io/)** - Web application framework
 - **[LangChain](https://langchain.com/)** - AI application development framework
 - **[Google AI](https://ai.google/)** - Gemini models and embeddings
-- **[FAISS](https://faiss.ai/)** - Efficient similarity search and clustering
+- **[ChromaDB](https://www.trychroma.com/)** - Efficient similarity search and clustering
 - **[PyPDF2](https://pypdf2.readthedocs.io/)** - PDF processing library
 
 ### 📞 Support & Feedback
